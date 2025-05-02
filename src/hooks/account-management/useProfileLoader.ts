@@ -10,7 +10,7 @@ import { useAccountReactivation } from "./useAccountReactivation";
 const PROFILE_STORAGE_KEY = "cached_user_profile";
 const AUTH_USER_STORAGE_KEY = "cached_auth_user";
 
-export const useProfileLoader = (): UseProfileLoaderReturn => {
+export const useProfileLoader = (options = { redirectOnFailure: true }): UseProfileLoaderReturn => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { reactivateAccount } = useAccountReactivation();
@@ -121,8 +121,12 @@ export const useProfileLoader = (): UseProfileLoaderReturn => {
           if (isMounted.current) {
             setLoadError("Failed to authenticate user");
             setIsLoading(false);
+            
+            // Only redirect if redirectOnFailure option is true
+            if (options.redirectOnFailure) {
+              navigate('/login');
+            }
           }
-          navigate('/login');
           return;
         }
         
@@ -132,8 +136,12 @@ export const useProfileLoader = (): UseProfileLoaderReturn => {
           if (isMounted.current) {
             setLoadError("No authenticated user found");
             setIsLoading(false);
+            
+            // Only redirect if redirectOnFailure option is true
+            if (options.redirectOnFailure) {
+              navigate('/login');
+            }
           }
-          navigate('/login');
           return;
         }
         

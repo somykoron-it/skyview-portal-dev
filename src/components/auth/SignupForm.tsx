@@ -5,18 +5,23 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { createNewSession } from "@/services/session";
 import { useSessionHandler } from "@/hooks/useSessionHandler";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 
 const signupFormSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(6, "Password must be at least 6 characters."),
-})
+});
 
 type SignupFormValues = z.infer<typeof signupFormSchema>;
 
@@ -39,8 +44,8 @@ export function SignupForm() {
 
     try {
       // Set a flag to prevent SessionCheck from redirecting during signup
-      localStorage.setItem('login_in_progress', 'true');
-      
+      localStorage.setItem("login_in_progress", "true");
+
       // Sign up
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
@@ -54,48 +59,44 @@ export function SignupForm() {
           title: "Signup failed",
           description: error.message,
         });
-        localStorage.removeItem('login_in_progress');
+        localStorage.removeItem("login_in_progress");
         setLoading(false);
         return;
       }
 
       if (authData.session) {
         // Add the user to the profiles table
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user?.id,
-            email: data.email,
-            subscription_plan: 'free',
-            account_status: 'active',
-          });
-          
+        const { error: profileError } = await supabase.from("profiles").insert({
+          id: authData.user?.id,
+          email: data.email,
+          subscription_plan: "free",
+          account_status: "active",
+        });
+
         if (profileError) {
           console.error("Error creating profile:", profileError);
         }
-        
-        await createNewSession(authData.session.user.id);
-        
+
         // Sign out the user after successful signup to force them to log in explicitly
         await supabase.auth.signOut();
-        
+
         // Clean up before navigation
-        localStorage.removeItem('login_in_progress');
-        
+        localStorage.removeItem("login_in_progress");
+
         // Pass email to login form for convenience
-        navigate("/login", { 
+        navigate("/login", {
           replace: true,
-          state: { 
+          state: {
             from_signup: true,
-            email: data.email 
-          }
+            email: data.email,
+          },
         });
       } else {
         toast({
           title: "Check your email",
           description: "We've sent you a verification link.",
         });
-        localStorage.removeItem('login_in_progress');
+        localStorage.removeItem("login_in_progress");
       }
     } catch (error) {
       console.error("Authentication error:", error);
@@ -104,7 +105,7 @@ export function SignupForm() {
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
       });
-      localStorage.removeItem('login_in_progress');
+      localStorage.removeItem("login_in_progress");
     } finally {
       setLoading(false);
     }
@@ -114,14 +115,12 @@ export function SignupForm() {
     <Card className="bg-card-gradient border border-white/10 shadow-xl backdrop-blur-sm">
       <CardContent className="pt-6">
         <div className="mb-6 text-center">
-          <h2 className="text-xl font-bold text-white">
-            Create a New Account
-          </h2>
+          <h2 className="text-xl font-bold text-white">Create a New Account</h2>
           <p className="text-sm text-gray-400 mt-1">
             Fill in the details below to get started
           </p>
         </div>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -172,7 +171,7 @@ export function SignupForm() {
                 <span>Create Account</span>
               )}
             </Button>
-            
+
             <div className="flex items-center my-4">
               <div className="flex-grow border-t border-white/10"></div>
               <span className="px-3 text-xs text-gray-400">OR</span>
@@ -180,11 +179,14 @@ export function SignupForm() {
             </div>
 
             <GoogleSignInButton />
-            
+
             <div className="text-center mt-4">
               <span className="text-sm text-gray-400">
                 Already have an account?{" "}
-                <Link to="/login" className="text-brand-gold hover:text-brand-gold/80 transition-colors">
+                <Link
+                  to="/login"
+                  className="text-brand-gold hover:text-brand-gold/80 transition-colors"
+                >
                   Sign in
                 </Link>
               </span>

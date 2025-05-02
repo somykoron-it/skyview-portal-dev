@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { useProfileLoader } from "@/hooks/account-management/useProfileLoader";
 import { Profile } from "@/hooks/account-management/types";
 import { User } from "@supabase/supabase-js";
+import { useLocation } from "react-router-dom";
 
 interface ProfileContextType {
   isProfileLoading: boolean;
@@ -22,7 +23,27 @@ export const useProfileContext = () => {
   return context;
 };
 
+// List of public routes that should not redirect on auth failure
+const PUBLIC_ROUTES = [
+  '/',
+  '/login', 
+  '/signup', 
+  '/forgot-password', 
+  '/reset-password',
+  '/about',
+  '/privacy-policy',
+  '/refunds',
+  '/release-notes',
+  '/help'
+];
+
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  const currentPath = location.pathname;
+  
+  // Determine if we should redirect on auth failure based on current path
+  const shouldRedirect = !PUBLIC_ROUTES.includes(currentPath);
+  
   const {
     isLoading: isProfileLoading,
     loadError: profileLoadError,
@@ -30,7 +51,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     profile,
     authUser,
     retryLoading: refreshProfile
-  } = useProfileLoader();
+  } = useProfileLoader({ redirectOnFailure: shouldRedirect });
 
   useEffect(() => {
     if (profile) {

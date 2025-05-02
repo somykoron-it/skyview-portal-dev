@@ -100,7 +100,7 @@ const MessageContent = ({ content }) => {
   if (content.includes("<table>")) {
     return (
       <div 
-        className="table-wrapper overflow-x-auto bg-slate-900 p-2 rounded-lg border border-slate-700 text-white text-xs"
+        className="table-wrapper overflow-x-auto bg-slate-900 p-2 rounded-lg border border-slate-700 text-white text-sm"
         dangerouslySetInnerHTML={{ 
           __html: sanitizeHtml(content, {
             allowedTags: ['table', 'tr', 'td', 'th', 'thead', 'tbody', 'h3', 'h4', 'p', 'ul', 'li', 'ol', 'code', 'pre', 'strong', 'em']

@@ -62,8 +62,7 @@ export function useNavbarAuth() {
             localStorage.removeItem('user_is_admin');
           }
           
-          // Handle redirects, but only once and with debouncing
-          handleRedirect(isUserAdmin, profile);
+          // Removed the handleRedirect call to prevent unwanted redirects
         }
         
         if (mounted) {
@@ -77,12 +76,6 @@ export function useNavbarAuth() {
           setIsLoading(false);
         }
       }
-    };
-
-    // Separate function for redirects to avoid repeated calls
-    const handleRedirect = (isUserAdmin, profile) => {
-      // Rest of your redirect logic remains the same
-      // ...
     };
 
     // Initial check

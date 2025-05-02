@@ -9,7 +9,7 @@ import { useMobileMenuState } from "@/hooks/landing/useMobileMenuState";
 
 export function NavbarContainer() {
   // Use our custom hooks to separate logic from presentation
-  const { isLoggedIn, isLoading } = useNavbarAuth();
+  const { isLoggedIn, isLoading, isAdmin } = useNavbarAuth();
   const { handleLogoClick } = useLogoClickHandler();
   const { scrollToPricing } = usePricingScroll();
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenuState();

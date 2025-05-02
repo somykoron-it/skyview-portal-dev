@@ -17,43 +17,29 @@ import { Button } from "@/components/ui/button";
 export default function Index() {
   const location = useLocation();
   const [showIOSPrompt, setShowIOSPrompt] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const hasPricingSectionScrolled = useRef(false);
 
-  // Check if user is logged in using local storage
   useEffect(() => {
     console.log('Index page mounted');
     
-    // First check if we need to scroll to pricing section
+    // Handle scroll to pricing if needed
     const searchParams = new URLSearchParams(location.search);
     const scrollTo = searchParams.get('scrollTo');
     const needsToScrollToPricing = scrollTo === 'pricing-section';
     
-    // Check auth status from local storage
-    const authStatus = localStorage.getItem("auth_status");
-    
-    // Only redirect if authenticated AND not trying to view pricing section
-    if (authStatus === "authenticated" && !needsToScrollToPricing) {
-      console.log("User is logged in, redirecting to chat");
-      navigate("/chat", { replace: true });
-    } else {
-      setIsLoading(false);
-      
-      // Handle scroll to pricing if needed (when page is fully loaded)
-      if (needsToScrollToPricing) {
-        // Use a small timeout to ensure the page has rendered properly
-        setTimeout(() => {
-          const pricingSection = document.getElementById('pricing-section');
-          if (pricingSection && !hasPricingSectionScrolled.current) {
-            pricingSection.scrollIntoView({ behavior: 'smooth' });
-            hasPricingSectionScrolled.current = true;
-          }
-        }, 500);
-      }
+    // Handle scroll to pricing section
+    if (needsToScrollToPricing) {
+      // Use a small timeout to ensure the page has rendered properly
+      setTimeout(() => {
+        const pricingSection = document.getElementById('pricing-section');
+        if (pricingSection && !hasPricingSectionScrolled.current) {
+          pricingSection.scrollIntoView({ behavior: 'smooth' });
+          hasPricingSectionScrolled.current = true;
+        }
+      }, 500);
     }
 
-    // Continue with other initialization logic
     // Check if it's iOS and not in standalone mode
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
@@ -71,7 +57,7 @@ export default function Index() {
     return () => {
       console.log('Index page unmounted');
     };
-  }, [location, navigate]);
+  }, [location]);
 
   const handleClosePrompt = () => {
     setShowIOSPrompt(false);
@@ -86,15 +72,6 @@ export default function Index() {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 0.5 } }
   };
-
-  // Show loading state while checking auth
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-luxury-dark flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-luxury-dark flex flex-col overflow-hidden">

@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { invalidateSessionToken } from "@/services/session/invalidateSession";
+import { invalidateSessionToken } from "@/services/session/sessionService";
 
 export const useLogout = () => {
   const navigate = useNavigate();

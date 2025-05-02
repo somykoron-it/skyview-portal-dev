@@ -108,12 +108,7 @@ export function AuthLoginForm({ redirectPath = "/dashboard" }: AuthLoginFormProp
           localStorage.setItem('extended_session', 'true');
         }
         
-        // Create new session
-        await createNewSession(authData.session.user.id);
-        
-        // Fetch user profile directly before redirect
-        await fetchUserProfile(authData.session.user.id);
-        
+  
         // Redirect to the specified path or default to chat
         window.location.href = redirectPath;
         return; // Stop execution here
