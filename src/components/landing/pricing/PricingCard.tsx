@@ -19,10 +19,9 @@ import { PricingHeader } from "./pricing-card/PricingHeader";
 import { PricingFeatures } from "./pricing-card/PricingFeatures";
 import { usePricingHandler } from "@/hooks/usePricingHandler";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Subscription } from "@/types/subscription";
 import { useAuthStore } from "@/stores/authStores";
 import chalk from "chalk";
+import { getSubscriptionPlan } from "@/utils/subscription/planUtils";
 
 interface profile {
   id: string;
@@ -57,35 +56,12 @@ export const PricingCard = ({
   returnUrl = "/chat",
 }: PricingCardProps) => {
   const { handlePlanSelection } = usePricingHandler();
-  const [subscriptionData, setSubscriptionData] = useState<Subscription[]>([]);
   const [isActiveSubscription, setIsActiveSubscription] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const { profile, isLoading: authLoading } = useAuthStore();
-
-  // Step 1: Get user's subscriptions
-  const getSubscriptionData = async () => {
-    if (profile?.id) {
-      console.log(chalk.bgBlue.white.bold(`[PricingCard] Step 1: Fetching subscriptions for user ${profile.id}`));
-
-      const { data, error } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .eq("user_id", profile.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error(chalk.bgRed.white.bold("[PricingCard] Step 1.1: Error fetching subscriptions:"), error);
-      } else {
-        console.log(chalk.bgGreen.black.bold("[PricingCard] Step 1.2: Subscription data retrieved:"), data);
-        setSubscriptionData(data || []);
-      }
-    }
-    setIsLoading(false);
-  };
 
   // Step 2: Check if current plan is active
   const checkActiveSubscription = () => {
-    if (!profile || subscriptionData.length === 0) {
+    if (!profile) {
       if (
         profile?.subscription_plan === "free" &&
         (name.toLowerCase() === "free" || name.toLowerCase() === "free trial")
@@ -96,34 +72,32 @@ export const PricingCard = ({
       }
       return;
     }
-
-    const activeSubscription = subscriptionData[0];
+  
+    const activeSubscriptionPlan = getSubscriptionPlan(profile);
+    const subscriptionData = profile.subscription_id && !('error' in profile.subscription_id) 
+      ? profile.subscription_id 
+      : null;
+    
     const isActive =
-      ((activeSubscription.plan.toLowerCase() === name.toLowerCase() ||
-        (activeSubscription.plan === "monthly" && name.toLowerCase() === "monthly") ||
-        (activeSubscription.plan === "annual" && name.toLowerCase() === "annual")) &&
-        activeSubscription.payment_status === "active") ||
+      (subscriptionData &&
+        ((activeSubscriptionPlan.toLowerCase() === name.toLowerCase() ||
+          (activeSubscriptionPlan === "monthly" && name.toLowerCase() === "monthly") ||
+          (activeSubscriptionPlan === "annual" && name.toLowerCase() === "annual")) &&
+          subscriptionData.payment_status === "active")) ||
       (profile.subscription_plan === "free" &&
         (name.toLowerCase() === "free" || name.toLowerCase() === "free trial"));
-
+  
     setIsActiveSubscription(isActive);
-
+  
     console.log(
       chalk.bgMagenta.white.bold(`[PricingCard] Step 2: Checked active subscription → ${isActive ? "Active" : "Not Active"}`)
     );
   };
 
-  // Step 3: Fetch data when profile is ready
-  useEffect(() => {
-    if (profile?.id) {
-      getSubscriptionData();
-    }
-  }, [profile]);
-
   // Step 4: Recheck plan status when relevant data changes
   useEffect(() => {
     checkActiveSubscription();
-  }, [profile, subscriptionData, name]);
+  }, [profile, name]);
 
   // Step 5: Handle plan click
   const handlePlanClick = async () => {
@@ -150,7 +124,7 @@ export const PricingCard = ({
 
   // Step 6: Determine button text
   const getButtonText = () => {
-    if (isLoading) return "Loading...";
+    if (authLoading) return "Loading...";
     if (isActiveSubscription) return "Current Plan";
     if (name.toLowerCase() === "free" || name.toLowerCase() === "free trial") return "Start Your Free Trial";
     if (name.toLowerCase() === "monthly") return "Get Monthly Access";
@@ -190,7 +164,7 @@ export const PricingCard = ({
       <CardFooter>
         <Button
           onClick={handlePlanClick}
-          disabled={isActiveSubscription || isLoading}
+          disabled={isActiveSubscription || authLoading}
           className={`w-full ${
             isActiveSubscription
               ? "bg-gray-300 hover:bg-gray-300 text-gray-700 cursor-not-allowed"

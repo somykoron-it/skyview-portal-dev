@@ -26,6 +26,7 @@ import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import {
   formatPlanName,
   getButtonLabel,
+  getSubscriptionPlan,
   getTargetPlan,
   isButtonDisabled,
 } from "@/utils/subscription/planUtils";
@@ -52,15 +53,15 @@ export const SubscriptionInfo = ({
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Extract subscription data from profile with proper type checking
-  const subscriptionData = profileData.subscription_id && 
-    typeof profileData.subscription_id === 'object' && 
-    !('error' in profileData.subscription_id)
-      ? profileData.subscription_id 
+  const subscriptionData = profileData?.subscription_id && 
+    typeof profileData?.subscription_id === 'object' && 
+    !('error' in profileData?.subscription_id)
+      ? profileData?.subscription_id 
       : null;
 
   // Step 1: Handle changing plan
   const handleChangePlan = async (newPlan: string) => {
-    const currentPlan = profileData.subscription_plan || 'free';
+    const currentPlan = getSubscriptionPlan(profileData);
     
     console.log(chalk.bgBlue.white.bold("[SubscriptionInfo] Step 1: Starting plan change process"));
     console.log("➡️ Current plan:", currentPlan);
@@ -155,8 +156,15 @@ export const SubscriptionInfo = ({
 
         toast({
           title: "Plan Updated",
-          description: `You have successfully switched to the ${formatPlanName(newPlan)} plan.`,
+          description: (
+            <>
+              You have successfully switched to the <strong>{formatPlanName(newPlan)}</strong> plan.
+              <br />
+              If the changes are not visible, please reload the page after a few seconds.
+            </>
+          ),
         });
+        
 
         if (refreshProfile) {
           console.log("[SubscriptionInfo] Refreshing profile after successful plan switch...");
@@ -195,7 +203,7 @@ export const SubscriptionInfo = ({
   };
 
   // Get current plan and status from profile
-  const currentPlan = profileData?.subscription_plan || 'free';
+  const currentPlan =getSubscriptionPlan(profileData);
   const currentStatus = profileData?.subscription_status || subscriptionData?.payment_status || 'N/A';
 
   return (

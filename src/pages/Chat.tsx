@@ -13,14 +13,13 @@ import ChatHeader from "@/components/chat/ChatHeader";
 import {
   DeleteConfirmationDialog,
   OfflineAlert,
-  TrialEndedState,
 } from "@/components/chat/StatusAlerts";
 import ChatContainer from "@/components/chat/ChatContainer";
 import ChatInput from "@/components/chat/ChatInput";
 import { createNewChat } from "@/services/chatService/createNewChat";
-import { Subscription } from "@/types/subscription";
 import { useAuthStore } from "@/stores/authStores";
 import chalk from "chalk";
+import { getSubscriptionPlan, isTrialExhausted } from "@/utils/subscription/planUtils";
 
 /**
  * CHAT COMPONENT DOCUMENTATION
@@ -72,7 +71,6 @@ export default function Chat() {
     profile, 
     isLoading:isProfileLoading, 
     refreshProfile,
-    logout: storeLogout,
     profileError,
     queryCount,
     setQueryCount
@@ -91,7 +89,6 @@ export default function Chat() {
   const [isFetchingConversations, setIsFetchingConversations] = useState(false);
   const [isTrialEnded, setIsTrialEnded] = useState(false);
   const [currentRoleType, setCurrentRoleType] = useState<'Line Holder' | 'Reserve'>('Line Holder');
-  const [subscriptionData, setSubscriptionData] = useState<Subscription[]>([]);
   
   console.log(chalk.bgBlueBright.black.bold(`[Chat] Step 3: State variables initialized → Conversations: ${conversations.length}, Messages: ${messages.length}`));
   
@@ -112,8 +109,6 @@ export default function Chat() {
     if (!isProfileLoading && authUser?.id) {
       console.log(chalk.bgGreen.black.bold(`[Chat] Step 5a: Starting user data load → User ID: ${authUser.id}`));
       loadUserConversations(authUser.id);
-      getSubscriptionData();
-      
       // Set initial role type from profile
       if (profile?.role_type) {
         console.log(chalk.bgBlueBright.black.bold(`[Chat] Step 5b: Setting role type from profile → Role: ${profile.role_type}`));
@@ -122,15 +117,6 @@ export default function Chat() {
     }
   }, [isProfileLoading, authUser, profile?.role_type]);
 
-  // Fetch subscription data when profile changes
-  useEffect(() => {
-    console.log(chalk.bgBlueBright.black.bold(`[Chat] Step 6: Subscription data effect → Profile ID: ${profile?.id || 'none'}`));
-    
-    if (profile?.id) {
-      console.log(chalk.bgGreen.black.bold(`[Chat] Step 6a: Fetching subscription data → Profile ID: ${profile.id}`));
-      getSubscriptionData();
-    }
-  }, [profile?.id]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -144,8 +130,11 @@ export default function Chat() {
 
   // Check if free trial is exhausted using subscription data
   useEffect(() => {
-    const currentPlan = subscriptionData[0]?.plan || "free";
-    const freeTrialExhausted = currentPlan === "free" && (queryCount || 0) >= 2;
+    // Early return if profile is not loaded yet
+    if (!profile) return;
+    
+    const currentPlan = getSubscriptionPlan(profile);
+    const freeTrialExhausted = isTrialExhausted(profile, queryCount || 0);
     
     console.log(chalk.bgBlueBright.black.bold(`[Chat] Step 8: Trial validation effect → Plan: ${currentPlan}, Query Count: ${queryCount || 0}, Trial Exhausted: ${freeTrialExhausted}`));
     
@@ -159,32 +148,9 @@ export default function Chat() {
       }
     }
     
-  }, [queryCount, subscriptionData, isLoading]);
+  }, [queryCount, isLoading, profile]);
 
-  // Get subscription data from subscriptions table
-  const getSubscriptionData = async () => {
-    console.log(chalk.bgBlueBright.black.bold(`[Chat] Step 9: Getting subscription data → Profile ID: ${profile?.id || 'none'}`));
-    
-    if (profile?.id) {
-      try {
-        const { data, error } = await supabase
-          .from("subscriptions")
-          .select("*")
-          .eq("user_id", profile.id)
-          .order("created_at", { ascending: false });
-          
-        if (error) {
-          console.log(chalk.bgRed.white.bold(`[Chat] Step 9a: Subscription fetch error → ${error.message}`));
-          console.error("Error fetching subscription by user_id:", error);
-        } else {
-          console.log(chalk.bgGreen.black.bold(`[Chat] Step 9b: Subscription data retrieved → Count: ${data?.length || 0}, Current Plan: ${data?.[0]?.plan || 'none'}`));
-          setSubscriptionData(data || []);
-        }
-      } catch (err) {
-        console.log(chalk.bgRed.white.bold(`[Chat] Step 9c: Subscription fetch exception → ${err}`));
-      }
-    }
-  };
+
 
   // Handle role change
   const handleRoleChange = (newRole: 'Line Holder' | 'Reserve') => {
@@ -298,9 +264,9 @@ export default function Chat() {
       return;
     }
 
-    // Check if free trial is exhausted using subscription data
-    const currentPlan = subscriptionData[0]?.plan || "free";
-    const freeTrialExhausted = currentPlan === "free" && (queryCount || 0) >= 2;
+    // Check if free trial is exhausted using helper functions
+    const currentPlan = getSubscriptionPlan(profile);
+    const freeTrialExhausted = isTrialExhausted(profile, queryCount || 0);
 
     console.log(chalk.bgBlueBright.black.bold(`[Chat] Step 13b: Trial validation → Plan: ${currentPlan}, Query Count: ${queryCount || 0}, Exhausted: ${freeTrialExhausted}`));
 
@@ -333,7 +299,6 @@ export default function Chat() {
     
     console.log(chalk.bgGreen.black.bold(`[Chat] Step 13e: Message send completed`));
   };
-
   // Delete a conversation
   const handleDeleteConversation = async (conversationId) => {
     console.log(chalk.bgBlueBright.black.bold(`[Chat] Step 14: Deleting conversation → ID: ${conversationId}`));
@@ -565,7 +530,7 @@ export default function Chat() {
   };
 
   // Get current plan from subscription data
-  const currentPlan = subscriptionData[0]?.plan || "free";
+  const currentPlan = getSubscriptionPlan(profile);
   console.log(chalk.bgBlueBright.black.bold(`[Chat] Step 20: Rendering component → Current Plan: ${currentPlan}, Trial Ended: ${isTrialEnded}, Offline: ${isOffline}`));
 
   return (

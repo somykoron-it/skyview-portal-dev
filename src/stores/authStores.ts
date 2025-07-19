@@ -244,7 +244,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await supabase.auth.signOut();
       get().clearAuth();
       console.log('Logout completed successfully');
-      window.location.href = '/login'
+      // window.location.href = '/login'
     } catch (error) {
       console.log('Error during logout', error);
       throw error;
