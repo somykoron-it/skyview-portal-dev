@@ -53,10 +53,10 @@ export const SubscriptionInfo = ({
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Extract subscription data from profile with proper type checking
-  const subscriptionData = profileData.subscription_id && 
-    typeof profileData.subscription_id === 'object' && 
-    !('error' in profileData.subscription_id)
-      ? profileData.subscription_id 
+  const subscriptionData = profileData?.subscription_id && 
+    typeof profileData?.subscription_id === 'object' && 
+    !('error' in profileData?.subscription_id)
+      ? profileData?.subscription_id 
       : null;
 
   // Step 1: Handle changing plan
