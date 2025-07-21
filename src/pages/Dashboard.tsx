@@ -79,7 +79,7 @@ export default function Dashboard() {
     <AppLayout>
       <div className="space-y-4 sm:space-y-6 md:space-y-8">
         <div className="w-full">
-          <WelcomeCard userName={profile.full_name} />
+          <WelcomeCard userName={profile?.full_name} />
         </div>
         
         <div className="w-full">
