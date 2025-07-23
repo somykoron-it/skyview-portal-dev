@@ -2,13 +2,13 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppRoutes } from "@/components/routing/AppRoutes";
 import { Toaster } from "@/components/ui/toaster";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { LazyMotion, domAnimation } from "framer-motion";
 import { BrowserRouter } from "react-router-dom";
 import { ViewportManager } from "@/components/utils/ViewportManager";
 import * as Sentry from "@sentry/react";
-import { AuthProvider } from "./components/utils/AuthProvider";
 import { AppLoadingSpinner } from "./components/ui/app-loading-spinner";
+import { useAuthStore } from "@/stores/authStores";
 
 // Create QueryClient with default options
 const queryClient = new QueryClient({
@@ -19,9 +19,25 @@ const queryClient = new QueryClient({
     },
   },
 });
+
 function FallbackComponent() {
   return <div>An error has occurred</div>;
 }
+
+// Simple auth initializer component
+function AuthInitializer({ children }: { children: React.ReactNode }) {
+  const { fetchSessionAndProfile, isInitialized } = useAuthStore();
+
+  useEffect(() => {
+    // Initialize auth only once on app start
+    if (!isInitialized) {
+      fetchSessionAndProfile();
+    }
+  }, [fetchSessionAndProfile, isInitialized]);
+
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <Sentry.ErrorBoundary fallback={FallbackComponent} showDialog>
@@ -34,9 +50,9 @@ function App() {
 
               <div className="min-h-[100dvh] bg-luxury-dark">
                 <Suspense fallback={<AppLoadingSpinner />}>
-                  <AuthProvider>
+                  <AuthInitializer>
                     <AppRoutes />
-                  </AuthProvider>
+                  </AuthInitializer>
                 </Suspense>
               </div>
               <Toaster />

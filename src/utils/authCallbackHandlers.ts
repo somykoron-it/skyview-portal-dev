@@ -90,7 +90,7 @@ export const handleProfileRedirect = async (
   console.log('Paid plan user, redirecting to checkout');
   const priceId = profile.subscription_plan === 'monthly'
     ? 'price_1QxETHA8w17QmjsPS1R3bhj8'  // Updated monthly price ID
-    : 'price_1QxETwA8w17QmjsP9tnCgLAx';  // Updated annual price ID
+    : 'price_1RnYa8A8w17QmjsPTh4yLR01';  // Updated annual price ID
 
   try {
     await handleStripeCheckout(priceId);
@@ -106,7 +106,7 @@ export const handleSelectedPlan = async (
   if (selectedPlan && selectedPlan !== 'free') {
     const priceId = selectedPlan.toLowerCase() === 'monthly' 
       ? 'price_1QxETHA8w17QmjsPS1R3bhj8'  // Updated monthly price ID
-      : 'price_1QxETwA8w17QmjsP9tnCgLAx';  // Updated annual price ID
+      : 'price_1RnYa8A8w17QmjsPTh4yLR01';  // Updated annual price ID
 
     try {
       const success = await handleStripeCheckout(priceId);
