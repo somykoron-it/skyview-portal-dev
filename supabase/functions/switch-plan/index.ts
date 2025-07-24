@@ -161,7 +161,7 @@ serve(async (req) => {
     .single();
 
     const stripeSubscriptionId = profile.subscriptions?.stripe_subscription_id;
-    let targetPriceId = 'price_1QxETwA8w17QmjsP9tnCgLAx' // annual
+    let targetPriceId = 'price_1RnYa8A8w17QmjsPTh4yLR01' // annual
     let proration_behavior = 'always_invoice'
     let billing_cycle_anchor = 'now'
     if(newPlan == 'monthly') {

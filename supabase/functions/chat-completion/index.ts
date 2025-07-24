@@ -9,8 +9,14 @@ import {
   getMessages, 
   runAssistantStream
 } from "./utils/openAI.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { cleanResponse, containsNonContractContent } from "./utils/validation.ts";
 import { withRetry } from "./utils/retryUtils.ts";
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,18 +33,19 @@ serve(async (req) => {
   try {
     console.time('serverResponse')
     // Parse the request body
-    const { content, subscriptionPlan, assistantId, priority, stream, retryCount = 1 } = await req.json();
+    const { content, subscriptionPlan, conversationId, assistantId, priority, stream, retryCount = 1 } = await req.json();
     
-    console.log('Request received for chat completion');
-    console.log('Content length:', content?.length || 0);
-    console.log('Assistant ID:', assistantId || 'default');
-    console.log('Priority request:', priority ? 'Yes' : 'No');
-    console.log('Streaming enabled:', stream ? 'Yes' : 'No');
-    console.log('Retry count:', retryCount);
+    console.log('[chat-completion]: Request received for chat completion');
+    console.log('[chat-completion]: Content length:', content?.length || 0);
+    console.log('[chat-completion]: Assistant ID:', assistantId || 'default');
+    console.log('[chat-completion]: Conversation ID:', conversationId)
+    console.log('[chat-completion]: Priority request:', priority ? 'Yes' : 'No');
+    console.log('[chat-completion]: Streaming enabled:', stream ? 'Yes' : 'No');
+    console.log('[chat-completion]: Retry count:', retryCount);
 
     // Check if content appears to be non-contract related
     if (containsNonContractContent(content)) {
-      console.log('Content appears to be non-contract related. Providing guidance response.');
+      console.log('[chat-completion]: Content appears to be non-contract related. Providing guidance response.');
       return new Response(JSON.stringify({ 
         response: "I'm designed to answer questions about your union contract. Please ask a question related to your contract's terms, policies, or provisions, and I'll provide specific information with references to the relevant sections."
       }), {
@@ -49,95 +56,64 @@ serve(async (req) => {
     // Max retries for all OpenAI operations
     const maxRetries = Math.min(5, retryCount + 2); // Base + client-requested retries, capped at 5
     
-    // Create a thread with retry
-    const thread = await withRetry(() => createThread(), {
-      maxRetries,
-      initialDelay: 300 // Reduced initial delay for faster first attempt
-    });
-    console.log('Thread created:', thread.id);
+    // fetch conversation for the purpose of getting context
+    // Get user profile for subscription info
+    const { data: conversation, error: conversationError } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("id", conversationId)
+      .single();
 
+    // Check for fetch error from db
+    if (conversationError) {
+      console.log(`[chat-completion]: failed to fetch conversation`);
+      console.log(conversationError)
+      return new Response(JSON.stringify({ 
+        response: "Something wrong with conversation, please with a new one"
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    let threadId = conversation.thread_id;
+    if(!threadId) {
+      // Create a thread with retry
+      const thread = await withRetry(() => createThread(), {
+        maxRetries,
+        initialDelay: 300 // Reduced initial delay for faster first attempt
+      });
+      threadId = thread.id
+      console.log(`[chat-completion]: Thread created: ${threadId}`);
+      
+      // update thread id
+      await supabase.from("conversations")
+      .update({ thread_id: threadId })
+      .eq("id", conversationId);
+    }
+
+    console.log(`[chat-completion]: going to use thread: ${threadId}`);
     // Add message to thread with retry
-    await withRetry(() => addMessageToThread(thread.id, content), {
+    await withRetry(() => addMessageToThread(threadId, content), {
       maxRetries,
       initialDelay: 300
     });
-    console.log('Message added to thread');
-
-    if (stream) {
-      console.log('we are on the stream block, let see how far we go')
-      // const run = await withRetry(() => runAssistantStream(thread.id, assistantId, true), { maxRetries, initialDelay: 300 });
-      const stream = await runAssistantStream({
-        threadId: thread.id,
-        assistantId: assistantId,
-      });
-      console.timeEnd('serverResponse')
-      return new Response(stream, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        },
-      });
-    }
-    
-    // regular code for non-stream
-    // Run the assistant with the effective assistant ID with retry
-    const run = await withRetry(() => runAssistant(thread.id, assistantId), {
-      maxRetries,
-      initialDelay: 300
+    console.log('[chat-completion]: Message added to thread');
+    console.log('[chat-completion]: we are on the stream block, let see how far we go')
+    const assistantStream = await runAssistantStream({
+      threadId: threadId,
+      assistantId: assistantId,
     });
-    console.log('Assistant run started:', run.id);
-
-    // Ultra-aggressive polling for completion with minimal interval
-    // This maximizes the chances of getting a response as soon as it's ready
-    let runStatus;
-    let attempts = 0;
-    const maxAttempts = 300; // 150 seconds maximum wait time when using 500ms polling
-    const pollingInterval = priority ? 200 : 300; // Ultra-fast polling for priority requests
-    
-    do {
-      if (attempts >= maxAttempts) {
-        throw new Error('Run timed out after 150 seconds');
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, pollingInterval));
-      
-      runStatus = await withRetry(() => getRunStatus(thread.id, run.id), {
-        maxRetries: 3,
-        initialDelay: 200
-      });
-      console.log('Run status:', runStatus.status, 'Attempt:', attempts);
-      attempts++;
-      
-    } while (runStatus.status === 'queued' || runStatus.status === 'in_progress');
-
-    if (runStatus.status !== 'completed') {
-      throw new Error(`Run failed with status: ${runStatus.status}`);
-    }
-
-    // Get messages immediately once complete with retry
-    const messages = await withRetry(() => getMessages(thread.id), {
-      maxRetries: 3,
-      initialDelay: 300
+    console.timeEnd('serverResponse')
+    return new Response(assistantStream, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
     });
-    const assistantMessage = messages.data.find(m => m.role === 'assistant');
-    
-    if (!assistantMessage) {
-      throw new Error('No assistant message found');
-    }
-
-    const rawResponse = assistantMessage.content[0].text.value;
-    // Clean and format the response without any unnecessary processing delays
-    const response = cleanResponse(rawResponse);
-    console.log('Successfully retrieved and processed assistant response');
-
-    return new Response(JSON.stringify({ response }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-
   } catch (error) {
-    console.error('Error in chat-completion function:', error);
+    console.error('[chat-completion]: Error in chat-completion function:', error);
     
     let errorMessage = "I'm having trouble processing your request right now. Please try again in a moment.";
     let statusCode = 500;

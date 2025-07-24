@@ -51,7 +51,7 @@ export const plans = [
     buttonText: "Best Value",
     gradient: "bg-gradient-to-br from-brand-gold/20 to-brand-gold/10",
     productId: "prod_RqwMrl4svIqPOB", // Annual product ID
-    priceId: "price_1QxETwA8w17QmjsP9tnCgLAx", // Annual price ID
+    priceId: "price_1RnYa8A8w17QmjsPTh4yLR01", // Annual price ID
     mode: "subscription"
   }
 ];
