@@ -39,14 +39,18 @@ export const NotificationManager = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
+      {/* Responsive Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+        <div className="w-full sm:w-auto">
           <h2 className="text-xl font-semibold">Notification History</h2>
           <p className="text-sm text-muted-foreground">
             Send updates and alerts to all devices including mobile and tablet
           </p>
         </div>
-        <Button onClick={() => setShowNewNotificationDialog(true)}>
+        <Button
+          onClick={() => setShowNewNotificationDialog(true)}
+          className="w-full sm:w-auto"
+        >
           Send New Notification
         </Button>
       </div>

@@ -12,6 +12,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   releaseNoteId: string;
+  noteId: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -31,7 +32,7 @@ const handler = async (req: Request): Promise<Response> => {
       SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { releaseNoteId }: EmailRequest = await req.json();
+    const { noteId: releaseNoteId }: EmailRequest = await req.json();
     console.log('Release note ID:', releaseNoteId);
 
     // Get release note details
@@ -107,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
         </body>
       </html>
     `;
-
+    
     // Format the emails array for Resend's batch API
     const emails = emailRecipients.map(recipient => ({
       from: "SkyGuide Updates <updates@skyguide.site>",

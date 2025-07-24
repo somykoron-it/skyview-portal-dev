@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,11 @@ interface UsersTableProps {
   users: ProfilesRow[] | undefined;
   updatingUser: string | null;
   toggleAdminStatus: (userId: string, currentStatus: boolean) => Promise<void>;
-  updateAccountStatus: (userId: string, email: string, status: "disabled" | "suspended" | "deleted" | "active") => Promise<void>;
+  updateAccountStatus: (
+    userId: string,
+    email: string,
+    status: "disabled" | "suspended" | "deleted" | "active"
+  ) => Promise<void>;
   setSelectedUser: (user: ProfilesRow) => void;
   setUserToDelete: (user: ProfilesRow) => void;
 }
@@ -34,33 +37,38 @@ export const UsersTable = ({
   setUserToDelete,
 }: UsersTableProps) => {
   const getSubscriptionBadge = (plan: string | null, isAdmin: boolean) => {
-    if (isAdmin) {
-      return <Badge className="bg-purple-500 hover:bg-purple-600 whitespace-nowrap">Admin Plan</Badge>;
-    }
-    
-    if (!plan || plan === 'free') {
+   
+    if (!plan || plan === "free") {
       return <Badge variant="destructive">Free</Badge>;
     }
-    
-    if (plan === 'monthly') {
+
+    if (plan === "monthly") {
       return <Badge variant="default">Monthly</Badge>;
     }
-    
-    if (plan === 'annual') {
+
+    if (plan === "annual") {
       return <Badge variant="default">Annual</Badge>;
     }
-    
+
     return <Badge variant="outline">{plan}</Badge>;
   };
 
-  const handleAdminToggle = async (userId: string, currentAdminStatus: boolean) => {
-    console.log("AdminToggle clicked - User ID:", userId, "Current admin status:", currentAdminStatus);
+  const handleAdminToggle = async (
+    userId: string,
+    currentAdminStatus: boolean
+  ) => {
+    console.log(
+      "AdminToggle clicked - User ID:",
+      userId,
+      "Current admin status:",
+      currentAdminStatus
+    );
     await toggleAdminStatus(userId, currentAdminStatus);
   };
 
   return (
-    <div className="rounded-md border">
-      <Table>
+    <div className="rounded-md border overflow-x-auto">
+      <Table className="min-w-[1000px]">
         <TableHeader>
           <TableRow>
             <TableHead>Full Name</TableHead>
@@ -83,7 +91,8 @@ export const UsersTable = ({
               <TableCell>{user.user_type || "N/A"}</TableCell>
               <TableCell>{user.airline || "N/A"}</TableCell>
               <TableCell>
-                {user.created_at && format(new Date(user.created_at), "MMM d, yyyy")}
+                {user.created_at &&
+                  format(new Date(user.created_at), "MMM d, yyyy")}
               </TableCell>
               <TableCell>{user.query_count || 0}</TableCell>
               <TableCell>
@@ -96,7 +105,9 @@ export const UsersTable = ({
                 <Switch
                   checked={user.is_admin || false}
                   disabled={updatingUser === user.id}
-                  onCheckedChange={() => handleAdminToggle(user.id, user.is_admin || false)}
+                  onCheckedChange={() =>
+                    handleAdminToggle(user.id, user.is_admin || false)
+                  }
                 />
               </TableCell>
               <TableCell>

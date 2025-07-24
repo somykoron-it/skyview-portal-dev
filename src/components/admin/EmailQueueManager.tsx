@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,7 +58,7 @@ export function EmailQueueManager() {
         title: "Queue Processed",
         description: `Successfully processed ${data?.results?.length || 0} emails`,
       });
-      
+
       // Refresh the email list
       loadEmails();
     } catch (error) {
@@ -89,7 +88,7 @@ export function EmailQueueManager() {
         title: "Email Queued",
         description: "Email has been queued for retry",
       });
-      
+
       // Refresh the email list
       loadEmails();
     } catch (error) {
@@ -125,27 +124,31 @@ export function EmailQueueManager() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          <span>Email Queue Manager</span>
-          <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={loadEmails} 
-              disabled={loading}
-            >
-              <RefreshCcw className="h-4 w-4 mr-1" />
-              Refresh
-            </Button>
-            <Button 
-              variant="secondary" 
-              size="sm" 
-              onClick={processQueue} 
-              disabled={processingEmails}
-            >
-              <PlayCircle className="h-4 w-4 mr-1" />
-              Process Queue
-            </Button>
+        <CardTitle>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <span>Email Queue Manager</span>
+            <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0 w-full sm:w-auto">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={loadEmails} 
+                disabled={loading}
+                className="w-full sm:w-auto"
+              >
+                <RefreshCcw className="h-4 w-4 mr-1" />
+                Refresh
+              </Button>
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                onClick={processQueue} 
+                disabled={processingEmails}
+                className="w-full sm:w-auto"
+              >
+                <PlayCircle className="h-4 w-4 mr-1" />
+                Process Queue
+              </Button>
+            </div>
           </div>
         </CardTitle>
         <CardDescription>
@@ -154,7 +157,7 @@ export function EmailQueueManager() {
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
+          <TabsList className="mb-4 flex flex-wrap gap-2">
             <TabsTrigger value="pending">Pending</TabsTrigger>
             <TabsTrigger value="processing">Processing</TabsTrigger>
             <TabsTrigger value="sent">Sent</TabsTrigger>
@@ -175,20 +178,22 @@ export function EmailQueueManager() {
                     key={email.id} 
                     className="border rounded-md p-4 hover:bg-muted/50 transition-colors"
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <h4 className="font-medium flex items-center">
-                          <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                          {email.email_type.charAt(0).toUpperCase() + email.email_type.slice(1)} Email
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span>{email.email_type.charAt(0).toUpperCase() + email.email_type.slice(1)} Email</span>
                         </h4>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground break-words">
                           To: {email.name ? `${email.name} (${email.email})` : email.email}
                         </p>
                       </div>
-                      {getStatusBadge(email.status)}
+                      <div className="self-start">
+                        {getStatusBadge(email.status)}
+                      </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-2 text-sm mt-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
                       <div>
                         <span className="text-muted-foreground">Scheduled for:</span>{" "}
                         {formatDate(email.scheduled_for)}
@@ -198,7 +203,7 @@ export function EmailQueueManager() {
                         {formatDate(email.created_at)}
                       </div>
                       {email.processed_at && (
-                        <div>
+                        <div className="sm:col-span-2">
                           <span className="text-muted-foreground">Processed:</span>{" "}
                           {formatDate(email.processed_at)}
                         </div>
@@ -207,7 +212,7 @@ export function EmailQueueManager() {
                     
                     {email.status === "failed" && (
                       <div className="mt-3">
-                        <div className="text-sm text-red-500 mb-2">
+                        <div className="text-sm text-red-500 mb-2 break-words">
                           Error: {email.metadata?.error || "Unknown error"}
                         </div>
                         <Button 

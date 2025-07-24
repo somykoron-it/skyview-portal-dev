@@ -1,4 +1,3 @@
-
 import { useUserManagement } from "@/hooks/useUserManagement";
 import { UsersTable } from "./user-management/UsersTable";
 import { UserDetailsDialog } from "./user-management/UserDetailsDialog";
@@ -22,16 +21,18 @@ export const UserManagement = () => {
   } = useUserManagement();
 
   // Filter out deleted users and null values completely
-  const activeUsers = users?.filter(user => 
-    user && 
-    user.id && 
-    user.account_status !== 'deleted'
-  ) || [];
+  const activeUsers =
+    users?.filter(
+      (user) => user && user.id && user.account_status !== "deleted"
+    ) || [];
 
-  console.log('Current users with statuses:', activeUsers.map(u => ({
-    email: u.email,
-    status: u.account_status
-  })));
+  console.log(
+    "Current users with statuses:",
+    activeUsers.map((u) => ({
+      email: u.email,
+      status: u.account_status,
+    }))
+  );
 
   if (isLoading) {
     return (
@@ -43,11 +44,12 @@ export const UserManagement = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end gap-4 mb-4">
+      {/* Responsive Button Group */}
+      <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 sm:gap-4 mb-4">
         <VerifyCleanupButton />
         <DeleteAllUsersButton />
       </div>
-    
+
       <UsersTable
         users={activeUsers}
         updatingUser={updatingUser}
@@ -57,6 +59,7 @@ export const UserManagement = () => {
         setUserToDelete={setUserToDelete}
       />
 
+      {/* Dialogs */}
       {selectedUser && selectedUser.id && (
         <UserDetailsDialog
           user={selectedUser}
