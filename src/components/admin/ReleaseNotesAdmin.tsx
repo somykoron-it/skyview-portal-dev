@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -35,7 +34,7 @@ export const ReleaseNotesAdmin = () => {
         .from("release_notes")
         .select("*")
         .order("created_at", { ascending: false });
-
+         console.log("📦 Fetched release notes:", data);
       if (error) throw error;
       setNotes(data || []);
     } catch (error) {
@@ -99,7 +98,7 @@ export const ReleaseNotesAdmin = () => {
         <h2 className="text-2xl font-bold">Release Notes</h2>
         <Button onClick={handleCreate} className="flex items-center gap-1">
           <Plus size={16} />
-          <span>New Release</span>
+          <span className="hidden sm:inline">New Release</span>
         </Button>
       </div>
 
@@ -112,7 +111,7 @@ export const ReleaseNotesAdmin = () => {
           notes.map((note) => (
             <Card key={note.id}>
               <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start flex-wrap gap-2">
                   <div>
                     <div className="flex items-center gap-2">
                       <CardTitle>{note.title}</CardTitle>
@@ -122,7 +121,7 @@ export const ReleaseNotesAdmin = () => {
                         </Badge>
                       )}
                     </div>
-                    <CardDescription className="flex items-center gap-2 mt-1">
+                    <CardDescription className="flex items-center gap-2 mt-1 flex-wrap text-sm">
                       <span>Version {note.version}</span>
                       <span>•</span>
                       <span>
@@ -132,31 +131,33 @@ export const ReleaseNotesAdmin = () => {
                       </span>
                     </CardDescription>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handlePreview(note)}
+                      className="flex items-center gap-1"
                     >
-                      <Eye size={14} className="mr-1" />
-                      Preview
+                      <Eye size={14} />
+                      <span className="hidden sm:inline">Preview</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(note)}
+                      className="flex items-center gap-1"
                     >
-                      <Edit size={14} className="mr-1" />
-                      Edit
+                      <Edit size={14} />
+                      <span className="hidden sm:inline">Edit</span>
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 flex items-center gap-1"
                       onClick={() => handleDelete(note.id)}
                     >
-                      <Trash2 size={14} className="mr-1" />
-                      Delete
+                      <Trash2 size={14} />
+                      <span className="hidden sm:inline">Delete</span>
                     </Button>
                   </div>
                 </div>
@@ -200,7 +201,6 @@ export const ReleaseNotesAdmin = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Changelog Preview Dialog */}
       <ChangelogDialog
         note={selectedNote}
         open={previewOpen}

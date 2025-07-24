@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Control } from "react-hook-form";  // <-- add Control import
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { TesterFormFields } from "./components/TesterFormFields";
@@ -24,17 +24,19 @@ export const NewTesterDialog = ({
   onSuccess,
 }: NewTesterDialogProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { register, handleSubmit, reset, watch, setValue } = useForm<FormData>({
+
+  // Add control here
+  const { register, handleSubmit, reset, watch, setValue, control } = useForm<FormData>({
     defaultValues: {
-      isPromoter: false
-    }
+      isPromoter: false,
+    },
   });
 
   const { addTester, isSubmitting, generatePassword } = useAddTester(onSuccess);
-  const isPromoter = watch('isPromoter');
+  const isPromoter = watch("isPromoter");
 
   const handleGeneratePassword = () => {
-    setValue('password', generatePassword());
+    setValue("password", generatePassword());
   };
 
   const onSubmit = async (data: FormData) => {
@@ -49,12 +51,13 @@ export const NewTesterDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New {isPromoter ? 'Promoter' : 'Alpha Tester'}</DialogTitle>
+          <DialogTitle>Add New {isPromoter ? "Promoter" : "Alpha Tester"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <TesterFormFields
             register={register}
+            control={control} // <-- pass control here
             showPassword={showPassword}
             setShowPassword={setShowPassword}
             generatePassword={handleGeneratePassword}
@@ -62,15 +65,11 @@ export const NewTesterDialog = ({
           />
 
           <div className="flex justify-end space-x-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Adding..." : `Add ${isPromoter ? 'Promoter' : 'Tester'}`}
+              {isSubmitting ? "Adding..." : `Add ${isPromoter ? "Promoter" : "Tester"}`}
             </Button>
           </div>
         </form>

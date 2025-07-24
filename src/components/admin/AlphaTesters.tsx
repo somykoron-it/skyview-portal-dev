@@ -32,9 +32,9 @@ export const AlphaTesters = () => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Alpha Testers</h2>
-        <Button onClick={() => setIsNewTesterDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Tester
+        <Button onClick={() => setIsNewTesterDialogOpen(true)} className="flex items-center gap-1">
+          <Plus size={16} />
+          <span className="hidden sm:inline">Add Tester</span>
         </Button>
       </div>
 

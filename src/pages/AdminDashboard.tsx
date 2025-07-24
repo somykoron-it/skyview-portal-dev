@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ReleaseNotesAdmin } from "@/components/admin/ReleaseNotesAdmin";
@@ -20,40 +19,41 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
-  const [loading, setLoading] = useState(false);
 
-  // Ensure admin status is set in localStorage
   useEffect(() => {
     localStorage.setItem('user_is_admin', 'true');
   }, []);
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
+      {/* Top Navbar */}
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <div className="flex gap-2">
           <Button 
             variant="outline" 
             onClick={() => navigate("/dashboard")} 
-            className="gap-2"
+            className="gap-2 px-2 md:px-4"
           >
-            <LayoutDashboard className="h-4 w-4" />
-            Go to Dashboard
+            <LayoutDashboard className="h-5 w-5" />
+            <span className="hidden md:inline">Dashboard</span>
           </Button>
+
           <Button 
             onClick={() => navigate("/chat")} 
-            className="gap-2"
+            className="gap-2 px-2 md:px-4"
           >
-            <MessageSquare className="h-4 w-4" />
-            Go to Chat
+            <MessageSquare className="h-5 w-5" />
+            <span className="hidden md:inline">Chat</span>
           </Button>
+
           <Button 
             variant="secondary"
             onClick={() => navigate("/account")} 
-            className="gap-2"
+            className="gap-2 px-2 md:px-4"
           >
-            <User className="h-4 w-4" />
-            Account
+            <User className="h-5 w-5" />
+            <span className="hidden md:inline">Account</span>
           </Button>
         </div>
       </div>
@@ -64,21 +64,28 @@ const AdminDashboard = () => {
         <SetPasswordPanel />
       </div>
 
+      {/* Admin Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="users">User Management</TabsTrigger>
-          <TabsTrigger value="alpha-testers">Alpha Testers</TabsTrigger>
-          <TabsTrigger value="release-notes">Release Notes</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="emails">Email Queue</TabsTrigger>
-          <TabsTrigger value="email-templates">
-            <Mail className="h-4 w-4 mr-2" />
-            Email Templates
-          </TabsTrigger>
-          <TabsTrigger value="chat-configuration">Chat Configuration</TabsTrigger>
-        </TabsList>
+        {/* Make TabsList scrollable */}
+        <div className="overflow-x-auto -mx-2">
+          <TabsList className="mb-6 flex-nowrap whitespace-nowrap min-w-max px-2">
+            <TabsTrigger value="overview" className="shrink-0">Overview</TabsTrigger>
+            <TabsTrigger value="users" className="shrink-0">User Management</TabsTrigger>
+            <TabsTrigger value="alpha-testers" className="shrink-0">Alpha Testers</TabsTrigger>
+            <TabsTrigger value="release-notes" className="shrink-0">Release Notes</TabsTrigger>
+            <TabsTrigger value="notifications" className="shrink-0">Notifications</TabsTrigger>
+            <TabsTrigger value="emails" className="shrink-0">Email Queue</TabsTrigger>
+            <TabsTrigger value="email-templates" className="shrink-0 flex items-center">
+              <Mail className="h-4 w-4 mr-2" />
+              <span className="hidden md:inline">Email Templates</span>
+            </TabsTrigger>
+            <TabsTrigger value="chat-configuration" className="shrink-0">
+              <span className="hidden md:inline">Chat Configuration</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
+        {/* Tab Contents */}
         <TabsContent value="overview"><SystemStats /></TabsContent>
         <TabsContent value="users"><UserManagement /></TabsContent>
         <TabsContent value="alpha-testers"><AlphaTesters /></TabsContent>

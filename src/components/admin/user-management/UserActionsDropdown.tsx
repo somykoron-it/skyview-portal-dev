@@ -33,24 +33,24 @@ export const UserActionsDropdown = ({
           </DropdownMenuItem>
         );
       default:
-        return (
-          <>
-            <DropdownMenuItem
-              onClick={() => updateAccountStatus(user.id, user.email || "", "disabled")}
-              className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/10"
-            >
-              <Ban className="h-4 w-4 mr-2" />
-              Disable Account
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => updateAccountStatus(user.id, user.email || "", "suspended")}
-              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/10"
-            >
-              <AlertCircle className="h-4 w-4 mr-2" />
-              Suspend Account
-            </DropdownMenuItem>
-          </>
-        );
+        // return (
+        //   <>
+        //     <DropdownMenuItem
+        //       onClick={() => updateAccountStatus(user.id, user.email || "", "disabled")}
+        //       className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/10"
+        //     >
+        //       <Ban className="h-4 w-4 mr-2" />
+        //       Disable Account
+        //     </DropdownMenuItem>
+        //     <DropdownMenuItem
+        //       onClick={() => updateAccountStatus(user.id, user.email || "", "suspended")}
+        //       className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/10"
+        //     >
+        //       <AlertCircle className="h-4 w-4 mr-2" />
+        //       Suspend Account
+        //     </DropdownMenuItem>
+        //   </>
+        // );
     }
   };
 

@@ -15,7 +15,9 @@ interface AlphaTestersTableProps {
   refetch: () => void;
 }
 
-export const AlphaTestersTable = ({ testers, refetch }: AlphaTestersTableProps) => {
+export const AlphaTestersTable = ({ testers, refetch }: AlphaTestersTableProps) =>
+   {
+    console.log("Testers data:", testers);
   const [testerToDelete, setTesterToDelete] = useState<AlphaTester | null>(null);
   const { togglePromoterStatus, updateStatus, deleteTester, isDeleting } = useTesterActions(testers, refetch);
 

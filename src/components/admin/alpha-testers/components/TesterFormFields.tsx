@@ -1,9 +1,10 @@
-import { UseFormRegister } from "react-hook-form";
+import { UseFormRegister, Controller } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Eye, EyeOff, RefreshCw } from "lucide-react";
+import { Control } from "react-hook-form";
 
 interface FormData {
   email: string;
@@ -14,18 +15,18 @@ interface FormData {
 
 interface TesterFormFieldsProps {
   register: UseFormRegister<FormData>;
+  control: Control<FormData>; // 👈 Added control
   showPassword: boolean;
   setShowPassword: (show: boolean) => void;
   generatePassword: () => void;
-  isPromoter: boolean;
 }
 
 export const TesterFormFields = ({
   register,
+  control,
   showPassword,
   setShowPassword,
   generatePassword,
-  isPromoter,
 }: TesterFormFieldsProps) => {
   return (
     <>
@@ -85,8 +86,20 @@ export const TesterFormFields = ({
         </div>
       </div>
 
+      {/* ✅ Fixed Switch with Controller */}
       <div className="flex items-center space-x-2">
-        <Switch id="isPromoter" {...register("isPromoter")} />
+        <Controller
+          name="isPromoter"
+          control={control}
+          defaultValue={false}
+          render={({ field }) => (
+            <Switch
+              id="isPromoter"
+              checked={field.value}
+              onCheckedChange={field.onChange}
+            />
+          )}
+        />
         <Label htmlFor="isPromoter">Add as Promoter</Label>
       </div>
     </>

@@ -24,8 +24,8 @@ export const useUserActions = (refetch: () => void) => {
       const { error } = await supabase
         .from("profiles")
         .update({ 
-          is_admin: newAdminStatus,
-          subscription_plan: subscriptionPlan
+          is_admin: newAdminStatus
+          // subscription_plan: subscriptionPlan
         })
         .eq("id", userId);
 

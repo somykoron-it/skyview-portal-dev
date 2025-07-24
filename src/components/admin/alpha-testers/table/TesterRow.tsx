@@ -43,12 +43,12 @@ export const TesterRow = ({ tester, onStatusChange, onPromoterToggle, onDelete }
           {tester.status}
         </Badge>
       </TableCell>
-      <TableCell>{tester.feedback_count || 0}</TableCell>
+      {/* <TableCell>{tester.feedback_count || 0}</TableCell>
       <TableCell>
         {tester.last_feedback_at
           ? format(new Date(tester.last_feedback_at), "MMM d, yyyy")
           : "Never"}
-      </TableCell>
+      </TableCell> */}
       <TableCell>
         <div className="flex items-center gap-2">
           <Switch
